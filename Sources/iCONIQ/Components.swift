@@ -133,11 +133,14 @@ struct WindowConfigurator: NSViewRepresentable {
             w.isRestorable = false
             w.contentMinSize = WindowConfigurator.minSize
             // SwiftUI restaure sa propre taille juste après l'affichage : on impose la nôtre au tour suivant.
-            DispatchQueue.main.async { [weak w] in
-                guard let w else { return }
-                let zone = (w.screen ?? NSScreen.main)?.visibleFrame.size ?? WindowConfigurator.defaultSize
-                w.setContentSize(NSSize(width: min(WindowConfigurator.defaultSize.width, zone.width), height: min(WindowConfigurator.defaultSize.height, zone.height - 40)))
-                w.socleCenter()
+            // Deux passes : SwiftUI peut encore redimensionner la fenêtre juste après son affichage.
+            for delay in [0.0, 0.3] {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak w] in
+                    guard let w else { return }
+                    let zone = (w.screen ?? NSScreen.main)?.visibleFrame.size ?? WindowConfigurator.defaultSize
+                    w.setContentSize(NSSize(width: min(WindowConfigurator.defaultSize.width, zone.width), height: min(WindowConfigurator.defaultSize.height, zone.height - 40)))
+                    w.socleCenter()
+                }
             }
         }
     }

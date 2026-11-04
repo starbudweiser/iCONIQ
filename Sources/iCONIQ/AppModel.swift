@@ -32,7 +32,7 @@ final class AppModel: ObservableObject {
     @Published var progress: ImportProgress?
     @Published var toast: Toast?
     @Published var portalSheet: Portal?
-    @Published var inspectorOpen = true
+    @Published var inspectorOpen = false
 
     private var generation = 0
     private var controllers: [String: PortalController] = [:]
