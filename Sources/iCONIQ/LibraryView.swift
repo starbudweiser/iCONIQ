@@ -192,6 +192,7 @@ struct IconCell: View {
     let tile: Double
     let bg: PreviewBG
     @State private var image: NSImage?
+    @State private var lastTap = Date.distantPast
 
     var body: some View {
         VStack(spacing: 5) {
@@ -211,8 +212,11 @@ struct IconCell: View {
         .task(id: "\(icon.file)-\(tile > 110)") {
             image = await Thumbs.shared.image(for: icon, lib: model.lib, side: tile > 110 ? 256 : 128)
         }
-        .onTapGesture(count: 2) { model.selection = [icon.id]; model.copy(icon) }
+        // Un seul geste : deux onTapGesture (count 2 puis 1) font attendre le délai du double-clic avant de sélectionner.
         .onTapGesture {
+            let now = Date()
+            if now.timeIntervalSince(lastTap) < NSEvent.doubleClickInterval { lastTap = .distantPast; model.selection = [icon.id]; model.copy(icon); return }
+            lastTap = now
             let f = NSEvent.modifierFlags
             model.click(icon, command: f.contains(.command), shift: f.contains(.shift))
         }
