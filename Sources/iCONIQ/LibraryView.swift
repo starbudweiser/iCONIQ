@@ -1,0 +1,287 @@
+import SwiftUI
+import iCONIQCore
+
+struct LibraryView: View {
+    @ObservedObject var model: AppModel
+    @AppStorage("tileSize") private var tile = 112.0
+    @AppStorage("previewLight") private var light = true
+
+    var body: some View {
+        VStack(spacing: 0) {
+            bar
+            Rectangle().fill(Socle.C.border).frame(height: 1)
+            HStack(spacing: 0) {
+                content
+                if model.inspectorOpen {
+                    Rectangle().fill(Socle.C.border).frame(width: 1)
+                    InspectorView(model: model).frame(width: 310)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var bar: some View {
+        HStack(spacing: Socle.M.space3) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(model.title).socle(Socle.T.heading).foregroundStyle(Socle.C.textStrong).lineLimit(1)
+                Text(L("lib.count", model.icons.count)).socle(Socle.T.caption).foregroundStyle(Socle.C.textSubtle)
+            }
+            .frame(minWidth: 120, alignment: .leading)
+            SearchField(prompt: L("lib.search"), text: $model.search).frame(maxWidth: 360)
+            Spacer(minLength: 0)
+            Slider(value: $tile, in: 72...200).frame(width: 90).tint(Socle.C.accent).help(L("lib.size"))
+            SocleSegmented(options: [true, false], selection: light, label: { $0 ? L("lib.bg.light") : L("lib.bg.dark") }, tone: { _ in .soft }) { light = $0 }
+            Menu {
+                Picker(L("lib.sort"), selection: $model.sort) {
+                    Text(L("lib.sort.name")).tag(IconSort.name)
+                    Text(L("lib.sort.added")).tag(IconSort.added)
+                    Text(L("lib.sort.size")).tag(IconSort.size)
+                }.pickerStyle(.inline)
+            } label: { Image(systemName: "arrow.up.arrow.down").foregroundStyle(Socle.C.textMuted) }
+            .menuStyle(.borderlessButton).menuIndicator(.hidden).frame(width: Socle.M.sizeControl).help(L("lib.sort"))
+            BarButton(symbol: "sidebar.right", help: L("lib.inspector"), active: model.inspectorOpen) { model.inspectorOpen.toggle() }
+            ImportMenu(model: model)
+        }
+        .padding(.horizontal, Socle.M.space4).frame(height: Socle.M.sizeBar + 14)
+        .background(Socle.C.surfaceRaised)
+    }
+
+    @ViewBuilder private var content: some View {
+        if model.icons.isEmpty {
+            EmptyLibrary(model: model)
+        } else {
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: tile, maximum: tile + 40), spacing: Socle.M.space3)], spacing: Socle.M.space3) {
+                    ForEach(model.icons) { icon in
+                        IconCell(model: model, icon: icon, selected: model.selection.contains(icon.id), tile: tile, light: light)
+                    }
+                }
+                .padding(Socle.M.space4)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Socle.C.bg)
+            .focusable().focusEffectDisabled()
+            .onDeleteCommand { confirmDelete(model.selectedIcons) }
+            .onKeyPress(.escape) { model.selection = []; return .handled }
+        }
+    }
+
+    private func confirmDelete(_ list: [Icon]) {
+        guard !list.isEmpty else { return }
+        let a = NSAlert()
+        a.messageText = L("delete.confirm", list.count)
+        a.informativeText = L("delete.confirm.info")
+        a.addButton(withTitle: L("common.delete")); a.addButton(withTitle: L("common.cancel"))
+        if a.runModal() == .alertFirstButtonReturn { model.delete(list) }
+    }
+}
+
+struct ImportMenu: View {
+    @ObservedObject var model: AppModel
+    var body: some View {
+        Menu {
+            Button(L("import.iconjar")) { model.chooseImport(.iconjar) }
+            Button(L("import.folder")) { model.chooseImport(.folder) }
+            Button(L("import.files")) { model.chooseImport(.files) }
+        } label: {
+            Text(L("import.button")).socle(Socle.T.button).foregroundStyle(Socle.C.onAction)
+                .padding(.horizontal, Socle.M.space4).frame(height: Socle.M.sizeControl)
+                .background(Socle.C.action, in: RoundedRectangle(cornerRadius: Socle.M.radius))
+        }
+        .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
+    }
+}
+
+struct EmptyLibrary: View {
+    @ObservedObject var model: AppModel
+    var body: some View {
+        VStack(spacing: Socle.M.space4) {
+            IconiqMark().foregroundStyle(Socle.C.borderStrong).frame(width: 90, height: 90)
+            if model.search.isEmpty && model.total == 0 {
+                Text(L("empty.title")).socle(Socle.T.heading).foregroundStyle(Socle.C.textStrong)
+                Text(branded: L("empty.body")).socle(Socle.T.body).foregroundStyle(Socle.C.textMuted).multilineTextAlignment(.center).frame(maxWidth: 420)
+                ImportMenu(model: model)
+            } else {
+                Text(model.search.isEmpty ? L("empty.collection") : L("empty.search")).socle(Socle.T.title).foregroundStyle(Socle.C.textMuted)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity).background(Socle.C.bg)
+    }
+}
+
+struct IconCell: View {
+    @ObservedObject var model: AppModel
+    let icon: Icon
+    let selected: Bool
+    let tile: Double
+    let light: Bool
+    @State private var image: NSImage?
+
+    var body: some View {
+        VStack(spacing: 5) {
+            ZStack(alignment: .topTrailing) {
+                RoundedRectangle(cornerRadius: Socle.M.radiusMd).fill(light ? Color(white: 0.955) : Socle.C.surface)
+                if let image { Image(nsImage: image).resizable().interpolation(.high).scaledToFit().padding(tile * 0.17) }
+                else { ProgressView().controlSize(.small).frame(maxWidth: .infinity, maxHeight: .infinity) }
+                if icon.starred { Image(systemName: "star.fill").font(.system(size: 9)).foregroundStyle(Socle.C.action).padding(5) }
+            }
+            .frame(height: tile)
+            .overlay(RoundedRectangle(cornerRadius: Socle.M.radiusMd).stroke(selected ? Socle.C.accent : Socle.C.border.opacity(light ? 0 : 1), lineWidth: selected ? 2 : 1))
+            Text(icon.name).socle(Socle.T.caption).foregroundStyle(selected ? Socle.C.textStrong : Socle.C.textMuted).lineLimit(1)
+        }
+        .padding(4)
+        .background(selected ? Socle.C.surfaceSelected : .clear, in: RoundedRectangle(cornerRadius: Socle.M.radiusLg))
+        .contentShape(Rectangle())
+        .task(id: "\(icon.file)-\(tile > 110)") {
+            image = await Thumbs.shared.image(for: icon, lib: model.lib, side: tile > 110 ? 256 : 128)
+        }
+        .onTapGesture(count: 2) { model.selection = [icon.id]; model.copy(icon) }
+        .onTapGesture {
+            let f = NSEvent.modifierFlags
+            model.click(icon, command: f.contains(.command), shift: f.contains(.shift))
+        }
+        .onDrag {
+            model.lib.touch([icon.id])
+            return NSItemProvider(contentsOf: model.lib.fileURL(icon)) ?? NSItemProvider()
+        }
+        .contextMenu { IconMenu(model: model, icon: icon) }
+    }
+}
+
+struct IconMenu: View {
+    @ObservedObject var model: AppModel
+    let icon: Icon
+    private var targets: [Icon] { model.selection.contains(icon.id) ? model.selectedIcons : [icon] }
+    var body: some View {
+        Button(L("act.copy")) { model.copy(icon) }
+        if icon.fmt == "svg" { Button(L("act.copySVG")) { IconExport.copySVGCode(icon, lib: model.lib); model.say(L("toast.copiedCode")) } }
+        Button(targets.allSatisfy(\.starred) ? L("act.unstar") : L("act.star")) { model.toggleStar(targets) }
+        Divider()
+        Menu(L("act.exportPNG")) { ForEach([64, 128, 256, 512, 1024], id: \.self) { s in Button("\(s) px") { model.exportPNG(targets, side: s) } } }
+        Button(L("act.exportOriginals")) { model.exportOriginals(targets) }
+        Button(L("act.reveal")) { model.reveal(targets) }
+        Menu(L("side.moveTo")) { ForEach(model.collections.filter { $0.kind != .micone || true }) { c in Button(c.name) { model.move(targets, to: c.id) } } }
+        Divider()
+        Button(L("common.delete"), role: .destructive) { model.delete(targets) }
+    }
+}
+
+// MARK: - Inspecteur
+
+struct InspectorView: View {
+    @ObservedObject var model: AppModel
+    @State private var name = ""
+    @State private var tags = ""
+    @State private var preview: NSImage?
+    @AppStorage("previewLight") private var light = true
+
+    private var single: Icon? { model.selectedIcons.count == 1 ? model.selectedIcons[0] : nil }
+
+    var body: some View {
+        Group {
+            if let icon = single { detail(icon) }
+            else if model.selection.count > 1 { multi }
+            else { VStack { Spacer(); Text(L("insp.none")).socle(Socle.T.body).foregroundStyle(Socle.C.textSubtle); Spacer() }.frame(maxWidth: .infinity) }
+        }
+        .background(Socle.C.surfaceRaised)
+    }
+
+    private func detail(_ icon: Icon) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Socle.M.space4) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: Socle.M.radiusMd).fill(light ? Color(white: 0.955) : Socle.C.surface)
+                    if let preview { Image(nsImage: preview).resizable().interpolation(.high).scaledToFit().padding(28) }
+                }
+                .frame(height: 230)
+                .overlay(RoundedRectangle(cornerRadius: Socle.M.radiusMd).stroke(Socle.C.border, lineWidth: 1))
+
+                field(L("insp.name")) { TextField("", text: $name).socleField().onSubmit { commit(icon) } }
+                field(L("insp.tags")) {
+                    TextField(L("insp.tags.hint"), text: $tags).socleField().onSubmit { commit(icon) }
+                    FlowChips(tags: icon.tagList)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    info(L("insp.format"), icon.fmt.uppercased() + (icon.width > 0 ? " · \(icon.width)×\(icon.height)" : ""))
+                    info(L("insp.collection"), model.collections.first { $0.id == icon.collection }?.name ?? "")
+                    info(L("insp.added"), icon.added.formatted(date: .abbreviated, time: .omitted))
+                    if !icon.sourceURL.isEmpty { link(L("insp.source"), icon.sourceURL) }
+                    if !icon.linkPath.isEmpty { info(L("insp.linked"), icon.linkPath) }
+                }
+
+                VStack(spacing: Socle.M.space2) {
+                    Button(L("act.copy")) { model.copy(icon) }.buttonStyle(SocleButtonStyle(.primary))
+                    HStack(spacing: Socle.M.space2) {
+                        Button(icon.starred ? L("act.unstar") : L("act.star")) { model.toggleStar([icon]) }.buttonStyle(SocleButtonStyle(.secondary))
+                        Menu(L("act.exportPNG")) { ForEach([64, 128, 256, 512, 1024], id: \.self) { s in Button("\(s) px") { model.exportPNG([icon], side: s) } } }
+                            .menuStyle(.button).buttonStyle(SocleButtonStyle(.secondary)).menuIndicator(.hidden)
+                    }
+                    HStack(spacing: Socle.M.space2) {
+                        Button(L("act.reveal")) { model.reveal([icon]) }.buttonStyle(SocleButtonStyle(.secondary))
+                        Button(L("common.delete")) { model.delete([icon]) }.buttonStyle(SocleButtonStyle(.secondary))
+                    }
+                }
+            }
+            .padding(Socle.M.space4)
+        }
+        .onAppear { sync(icon) }
+        .onChange(of: icon.id) { _, _ in sync(icon) }
+        .onChange(of: icon.file) { _, _ in sync(icon) }
+        .task(id: icon.id + icon.file) { preview = await Thumbs.shared.image(for: icon, lib: model.lib, side: 512) }
+    }
+
+    private var multi: some View {
+        VStack(alignment: .leading, spacing: Socle.M.space3) {
+            Text(L("insp.multi", model.selection.count)).socle(Socle.T.title).foregroundStyle(Socle.C.textStrong)
+            Button(model.selectedIcons.allSatisfy(\.starred) ? L("act.unstar") : L("act.star")) { model.toggleStar(model.selectedIcons) }.buttonStyle(SocleButtonStyle(.secondary))
+            Menu(L("act.exportPNG")) { ForEach([64, 128, 256, 512, 1024], id: \.self) { s in Button("\(s) px") { model.exportPNG(model.selectedIcons, side: s) } } }
+                .menuStyle(.button).buttonStyle(SocleButtonStyle(.secondary)).menuIndicator(.hidden)
+            Button(L("act.exportOriginals")) { model.exportOriginals(model.selectedIcons) }.buttonStyle(SocleButtonStyle(.secondary))
+            Menu(L("side.moveTo")) { ForEach(model.collections) { c in Button(c.name) { model.move(model.selectedIcons, to: c.id) } } }
+                .menuStyle(.button).buttonStyle(SocleButtonStyle(.secondary)).menuIndicator(.hidden)
+            Button(L("common.delete")) { model.delete(model.selectedIcons) }.buttonStyle(SocleButtonStyle(.secondary))
+            Spacer()
+        }
+        .padding(Socle.M.space4)
+    }
+
+    private func sync(_ icon: Icon) { name = icon.name; tags = icon.tags }
+    private func commit(_ icon: Icon) { model.rename(icon, name: name.trimmingCharacters(in: .whitespaces).isEmpty ? icon.name : name, tags: tags) }
+
+    private func field<C: View>(_ label: String, @ViewBuilder _ content: () -> C) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label).socle(Socle.T.label).foregroundStyle(Socle.C.textMuted)
+            content()
+        }
+    }
+
+    private func info(_ k: String, _ v: String) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(k).socle(Socle.T.meta).foregroundStyle(Socle.C.textSubtle).frame(width: 78, alignment: .leading)
+            Text(v).socle(Socle.T.meta).foregroundStyle(Socle.C.text).lineLimit(2).truncationMode(.middle)
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func link(_ k: String, _ v: String) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(k).socle(Socle.T.meta).foregroundStyle(Socle.C.textSubtle).frame(width: 78, alignment: .leading)
+            Button { if let u = URL(string: v) { NSWorkspace.shared.open(u) } } label: {
+                Text(v).socle(Socle.T.meta).foregroundStyle(Socle.C.accentText).lineLimit(1).truncationMode(.middle)
+            }.buttonStyle(.plain)
+            Spacer(minLength: 0)
+        }
+    }
+}
+
+struct FlowChips: View {
+    let tags: [String]
+    var body: some View {
+        if !tags.isEmpty {
+            HStack(spacing: 4) { ForEach(tags.prefix(6), id: \.self) { SocleChip(text: $0) } }.frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
