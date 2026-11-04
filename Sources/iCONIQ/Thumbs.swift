@@ -78,17 +78,23 @@ enum IconExport {
         return rep.representation(using: .png, properties: [:])
     }
 
+    /// Copie l'image, pas le fichier : « Lire les informations » du Finder, Aperçu, Figma… collent l'image comme icône.
+    /// Types déposés : TIFF, PNG, SVG ou ICNS d'origine selon le format.
     @MainActor
     static func copy(_ icon: Icon, lib: Library) {
+        let url = lib.fileURL(icon)
+        let native = max(icon.width, icon.height)
+        let side = icon.fmt == "svg" || native <= 0 ? 1024 : min(1024, max(256, native))
         let pb = NSPasteboard.general
         pb.clearContents()
-        let url = lib.fileURL(icon)
-        pb.writeObjects([url as NSURL])
-        if icon.fmt == "svg", let data = try? Data(contentsOf: url) {
-            pb.setData(data, forType: NSPasteboard.PasteboardType("public.svg-image"))
-            pb.setString(String(decoding: data, as: UTF8.self), forType: .string)
+        if let img = Thumbs.render(url: url, fmt: icon.fmt, px: side) {
+            pb.writeObjects([img])   // TIFF
+            if let rep = img.representations.first as? NSBitmapImageRep, let png = rep.representation(using: .png, properties: [:]) { pb.setData(png, forType: .png) }
         }
-        if let p = png(icon, lib: lib, side: 512) { pb.setData(p, forType: .png) }
+        if let data = try? Data(contentsOf: url) {
+            if icon.fmt == "svg" { pb.setData(data, forType: NSPasteboard.PasteboardType("public.svg-image")) }
+            if icon.fmt == "icns" { pb.setData(data, forType: NSPasteboard.PasteboardType("com.apple.icns")) }
+        }
         lib.touch([icon.id])
     }
 

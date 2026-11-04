@@ -78,6 +78,11 @@ struct LibraryView: View {
             .focusable().focusEffectDisabled()
             .onDeleteCommand { confirmDelete(model.selectedIcons) }
             .onKeyPress(.escape) { model.selection = []; return .handled }
+            .onKeyPress(characters: CharacterSet(charactersIn: "c"), phases: .down) { press in
+                guard press.modifiers == .command, let icon = model.selectedIcons.first else { return .ignored }
+                model.copy(icon)
+                return .handled
+            }
         }
     }
 
