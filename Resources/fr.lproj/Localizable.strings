@@ -94,7 +94,7 @@
 "set.library.reveal" = "Afficher la bibliothèque";
 "set.library.title" = "Bibliothèque";
 "set.micone.found" = "MiCONE est installé.";
-"set.micone.help" = "Lien dynamique : chaque icône créée dans MiCONE est envoyée ici et rangée dans la collection « MiCONE ». Si vous exportez à nouveau la même icône, elle est mise à jour sur place, avec ses favoris et ses étiquettes.";
+"set.micone.help" = "Lien dynamique : chaque icône créée dans MiCONE est envoyée ici et rangée dans la collection « PERSONNEL ». Si vous exportez à nouveau la même icône, elle est mise à jour sur place, avec ses favoris et ses étiquettes.";
 "set.micone.inbox" = "Afficher le dossier de dépôt";
 "set.micone.missing" = "MiCONE est introuvable sur ce Mac.";
 "set.micone.open" = "Ouvrir MiCONE";

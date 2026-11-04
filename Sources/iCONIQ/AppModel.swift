@@ -27,6 +27,7 @@ final class AppModel: ObservableObject {
     @Published var collections: [IconCollection] = []
     @Published var portals: [Portal] = []
     @Published var total = 0
+    @Published var linkedCount = 0
     @Published var expanded: Set<String> = []
     @Published var progress: ImportProgress?
     @Published var toast: Toast?
@@ -49,7 +50,7 @@ final class AppModel: ObservableObject {
     // MARK: Données
 
     func refreshSidebar() {
-        groups = lib.groups(); collections = lib.collections(); portals = lib.portals(); total = lib.totalCount()
+        groups = lib.groups(); collections = lib.collections(); portals = lib.portals(); total = lib.totalCount(); linkedCount = lib.linkedCount()
     }
 
     var query: IconQuery? {

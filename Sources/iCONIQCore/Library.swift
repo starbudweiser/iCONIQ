@@ -76,6 +76,15 @@ public final class Library: @unchecked Sendable {
         return IconCollection(id: id, group: group, name: name, author: author, sourceURL: sourceURL, license: license, kind: kind, sort: sort)
     }
 
+    /// Collection « PERSONNEL » (créée au besoin) : destination des icônes venues de MiCONE.
+    public func personalCollection() throws -> IconCollection {
+        if let c = collections().first(where: { $0.name.caseInsensitiveCompare(Inbox.collectionName) == .orderedSame && $0.kind != .portal }) { return c }
+        return try addCollection(name: Inbox.collectionName)
+    }
+
+    /// Nombre d'icônes suivies depuis MiCONE.
+    public func linkedCount() -> Int { (try? db.query("SELECT COUNT(*) n FROM icons WHERE link_path<>''"))?.first?.int("n") ?? 0 }
+
     /// Collection existante de même nom et de même type, sinon créée.
     public func collection(named name: String, kind: CollectionKind, group: String? = nil, sourceURL: String = "") throws -> IconCollection {
         if let c = collections().first(where: { $0.name == name && $0.kind == kind && $0.group == group }) { return c }
@@ -116,7 +125,7 @@ public final class Library: @unchecked Sendable {
         case .all: break
         case .starred: wh.append("starred=1")
         case .recent: wh.append("last_used IS NOT NULL")
-        case .micone: wh.append("collection IN (SELECT id FROM collections WHERE kind='micone')")
+        case .micone: wh.append("link_path<>''")
         case .collection(let id): wh.append("collection=?"); args.append(.text(id))
         case .group(let id):
             let ids = collectionIDs(inGroup: id)

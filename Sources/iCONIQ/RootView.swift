@@ -99,7 +99,7 @@ struct SidebarView: View {
                     row(.all, "square.grid.2x2", L("side.all"), model.total)
                     row(.starred, "star", L("side.starred"), nil)
                     row(.recent, "clock", L("side.recent"), nil)
-                    if model.collections.contains(where: { $0.kind == .micone }) { row(.micone, "app.badge", "MiCONE", model.collections.filter { $0.kind == .micone }.reduce(0) { $0 + $1.count }) }
+                    if model.linkedCount > 0 { row(.micone, "app.badge", "MiCONE", model.linkedCount) }
 
                     header(L("side.library")) {
                         Menu {

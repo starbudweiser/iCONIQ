@@ -85,6 +85,7 @@ final class CoreTests: XCTestCase {
         try Inbox.submit(.init(name: "Mon icône", file: "x.png", origin: "/tmp/Mon.icns", kind: "app", source: "MiCONE"), data: png1, lib: lib)
         XCTAssertEqual(Inbox.process(lib).count, 1)
         let first = lib.icons(IconQuery(scope: .micone)).first!
+        XCTAssertEqual(lib.collections().first { $0.id == first.collection }?.name, "PERSONNEL")
         lib.setStarred([first.id], true)
         try Inbox.submit(.init(name: "Mon icône", file: "x.png", origin: "/tmp/Mon.icns", kind: "app", source: "MiCONE"), data: png2, lib: lib)
         XCTAssertEqual(Inbox.process(lib), [first.id])

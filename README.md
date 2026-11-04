@@ -6,7 +6,7 @@
 
 - Import IconJar libraries (`.ijlibrary`) and jars (`.iconjar`), icon folders and SVG / PNG / ICNS files.
 - Built-in browser for icon portals whose addresses you enter yourself: search, navigation, detection of the icons on a page, click-to-capture mode, direct import of downloads (images and ZIP).
-- Live link with MiCONE: every icon exported there lands in the "MiCONE" collection and is updated in place when exported again.
+- Live link with MiCONE: every icon exported there lands in the "PERSONNEL" collection and is updated in place when exported again.
 - Search by name and tags, favorites, recents, collections and groups, copy as SVG / image, drag out to any app, export to PNG.
 - Automatic updates (GitHub releases, Developer ID signature check). English, French, Spanish, Italian.
 
