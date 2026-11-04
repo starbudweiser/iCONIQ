@@ -38,6 +38,7 @@ public final class Library: @unchecked Sendable {
         CREATE INDEX IF NOT EXISTS icons_last_used ON icons(last_used);
         CREATE INDEX IF NOT EXISTS icons_link ON icons(link_path);
         CREATE INDEX IF NOT EXISTS icons_hash ON icons(hash);
+        CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
         CREATE TABLE IF NOT EXISTS portals (id TEXT PRIMARY KEY, name TEXT NOT NULL, url TEXT NOT NULL, search_url TEXT DEFAULT '', sort INTEGER DEFAULT 0);
         """)
     }
@@ -259,8 +260,9 @@ public final class Library: @unchecked Sendable {
 
     /// Portails proposés au premier lancement (modifiables et supprimables).
     public func seedPortalsIfNeeded() {
-        guard (try? db.query("SELECT COUNT(*) n FROM portals"))?.first?.int("n") == 0, UserDefaults.standard.bool(forKey: "portalsSeeded") == false else { return }
-        UserDefaults.standard.set(true, forKey: "portalsSeeded")
+        guard (try? db.query("SELECT value FROM meta WHERE key='portalsSeeded'"))?.isEmpty == true else { return }
+        _ = try? db.run("INSERT INTO meta (key,value) VALUES ('portalsSeeded','1')")
+        guard (try? db.query("SELECT COUNT(*) n FROM portals"))?.first?.int("n") == 0 else { return }
         for (i, d) in PortalDefaults.all.enumerated() {
             savePortal(Portal(id: UUID().uuidString, name: d.name, url: d.url, searchURL: d.search, sort: i))
         }

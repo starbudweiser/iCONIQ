@@ -4,7 +4,7 @@ import iCONIQCore
 struct LibraryView: View {
     @ObservedObject var model: AppModel
     @AppStorage("tileSize") private var tile = 112.0
-    @AppStorage("previewLight") private var light = true
+    @AppStorage("previewBG") private var bg = PreviewBG.checker.rawValue
 
     var body: some View {
         VStack(spacing: 0) {
@@ -44,7 +44,7 @@ struct LibraryView: View {
             Text(L("lib.count", model.icons.count) + (model.selection.isEmpty ? "" : " · " + L("lib.selected", model.selection.count)))
                 .socle(Socle.T.meta).foregroundStyle(Socle.C.textSubtle).lineLimit(1)
             Spacer()
-            BarButton(symbol: light ? "sun.max" : "moon", help: L("lib.bg")) { light.toggle() }
+            BarButton(symbol: PreviewBG(rawValue: bg)?.symbol ?? "checkerboard.rectangle", help: L("lib.bg") + " : " + (PreviewBG(rawValue: bg)?.label ?? "")) { bg = (PreviewBG(rawValue: bg) ?? .checker).next.rawValue }
             Menu {
                 Picker(L("lib.sort"), selection: $model.sort) {
                     Text(L("lib.sort.name")).tag(IconSort.name)
@@ -68,7 +68,7 @@ struct LibraryView: View {
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: tile, maximum: tile + 40), spacing: Socle.M.space3)], spacing: Socle.M.space3) {
                     ForEach(model.icons) { icon in
-                        IconCell(model: model, icon: icon, selected: model.selection.contains(icon.id), tile: tile, light: light)
+                        IconCell(model: model, icon: icon, selected: model.selection.contains(icon.id), tile: tile, bg: PreviewBG(rawValue: bg) ?? .checker)
                     }
                 }
                 .padding(Socle.M.space4)
@@ -129,19 +129,19 @@ struct IconCell: View {
     let icon: Icon
     let selected: Bool
     let tile: Double
-    let light: Bool
+    let bg: PreviewBG
     @State private var image: NSImage?
 
     var body: some View {
         VStack(spacing: 5) {
             ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: Socle.M.radiusMd).fill(light ? Color(white: 0.955) : Socle.C.surface)
+                PreviewBackground(mode: bg).clipShape(RoundedRectangle(cornerRadius: Socle.M.radiusMd))
                 if let image { Image(nsImage: image).resizable().interpolation(.high).scaledToFit().padding(tile * 0.17) }
                 else { ProgressView().controlSize(.small).frame(maxWidth: .infinity, maxHeight: .infinity) }
                 if icon.starred { Image(systemName: "star.fill").font(.system(size: 9)).foregroundStyle(Socle.C.action).padding(5) }
             }
             .frame(height: tile)
-            .overlay(RoundedRectangle(cornerRadius: Socle.M.radiusMd).stroke(selected ? Socle.C.accent : Socle.C.border.opacity(light ? 0 : 1), lineWidth: selected ? 2 : 1))
+            .overlay(RoundedRectangle(cornerRadius: Socle.M.radiusMd).stroke(selected ? Socle.C.accent : Socle.C.border.opacity(bg == .dark ? 1 : 0), lineWidth: selected ? 2 : 1))
             Text(icon.name).socle(Socle.T.caption).foregroundStyle(selected ? Socle.C.textStrong : Socle.C.textMuted).lineLimit(1)
         }
         .padding(4)
@@ -188,7 +188,7 @@ struct InspectorView: View {
     @State private var name = ""
     @State private var tags = ""
     @State private var preview: NSImage?
-    @AppStorage("previewLight") private var light = true
+    @AppStorage("previewBG") private var bg = PreviewBG.checker.rawValue
 
     private var single: Icon? { model.selectedIcons.count == 1 ? model.selectedIcons[0] : nil }
 
@@ -205,7 +205,7 @@ struct InspectorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Socle.M.space4) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: Socle.M.radiusMd).fill(light ? Color(white: 0.955) : Socle.C.surface)
+                    PreviewBackground(mode: PreviewBG(rawValue: bg) ?? .checker, cell: 12).clipShape(RoundedRectangle(cornerRadius: Socle.M.radiusMd))
                     if let preview { Image(nsImage: preview).resizable().interpolation(.high).scaledToFit().padding(28) }
                 }
                 .frame(height: 230)

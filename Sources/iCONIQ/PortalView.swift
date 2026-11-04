@@ -121,7 +121,7 @@ struct CandidateCell: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: Socle.M.radius).fill(Color(white: 0.955))
+            PreviewBackground(mode: .checker, cell: 6).clipShape(RoundedRectangle(cornerRadius: Socle.M.radius))
             if let image { Image(nsImage: image).resizable().scaledToFit().padding(12) } else { ProgressView().controlSize(.small) }
             Image(systemName: picked ? "checkmark.circle.fill" : "circle").font(.system(size: 13))
                 .foregroundStyle(picked ? Socle.C.accent : Color.gray.opacity(0.6)).padding(4)

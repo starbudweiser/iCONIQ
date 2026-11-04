@@ -133,4 +133,7 @@
 "upd.uptodate" = "iCONIQ è aggiornato (versione %@).";
 "upd.version" = "Versione installata: %@";
 "lib.selected" = "%d selezionata/e";
-"lib.bg" = "Sfondo dell'anteprima: chiaro / scuro";
+"lib.bg" = "Sfondo dell'anteprima";
+"lib.bg.checker" = "Scacchiera";
+"lib.bg.light" = "Chiaro";
+"lib.bg.dark" = "Scuro";

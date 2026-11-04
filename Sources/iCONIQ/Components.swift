@@ -142,3 +142,32 @@ struct WindowConfigurator: NSViewRepresentable {
         }
     }
 }
+
+/// Fond d'aperçu des icônes : damier (la transparence reste visible), clair ou sombre.
+enum PreviewBG: String, CaseIterable {
+    case checker, light, dark
+    var next: PreviewBG { let a = Self.allCases; return a[(a.firstIndex(of: self)! + 1) % a.count] }
+    var symbol: String { switch self { case .checker: "checkerboard.rectangle"; case .light: "sun.max"; case .dark: "moon" } }
+    var label: String { switch self { case .checker: L("lib.bg.checker"); case .light: L("lib.bg.light"); case .dark: L("lib.bg.dark") } }
+}
+
+struct PreviewBackground: View {
+    let mode: PreviewBG
+    var cell: CGFloat = 8
+    var body: some View {
+        switch mode {
+        case .light: Color(white: 0.955)
+        case .dark: Socle.C.surface
+        case .checker:
+            Canvas { ctx, size in
+                ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(white: 0.96)))
+                let dark = Color(white: 0.86)
+                for r in 0..<Int(ceil(size.height / cell)) {
+                    for c in 0..<Int(ceil(size.width / cell)) where (r + c) % 2 == 0 {
+                        ctx.fill(Path(CGRect(x: CGFloat(c) * cell, y: CGFloat(r) * cell, width: cell, height: cell)), with: .color(dark))
+                    }
+                }
+            }
+        }
+    }
+}
