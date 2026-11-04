@@ -132,3 +132,5 @@
 "upd.title" = "Actualizaciones";
 "upd.uptodate" = "iCONIQ está actualizado (versión %@).";
 "upd.version" = "Versión instalada: %@";
+"lib.selected" = "%d seleccionado(s)";
+"lib.bg" = "Fondo de la vista previa: claro / oscuro";

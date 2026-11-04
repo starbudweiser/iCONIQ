@@ -106,6 +106,7 @@ struct CandidatesPanel: View {
                         Task { await ctl.add(list, quiet: false) }
                     }.buttonStyle(SocleButtonStyle(.primary)).disabled(ctl.picked.isEmpty || ctl.adding)
                 }
+                .lineLimit(1)
             }.padding(Socle.M.space3)
         }
         .background(Socle.C.surfaceRaised)

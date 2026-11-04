@@ -132,3 +132,5 @@
 "upd.title" = "Updates";
 "upd.uptodate" = "iCONIQ is up to date (version %@).";
 "upd.version" = "Installed version: %@";
+"lib.selected" = "%d selected";
+"lib.bg" = "Preview background: light / dark";

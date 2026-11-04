@@ -11,7 +11,8 @@ struct IconiqApp: App {
             RootView(model: model)
                 .onOpenURL { url in handle(url) }
         }
-        .defaultSize(width: 1320, height: 840)
+        .defaultSize(width: WindowConfigurator.defaultSize.width, height: WindowConfigurator.defaultSize.height)
+        .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button(L("about.menu")) { About.show() }

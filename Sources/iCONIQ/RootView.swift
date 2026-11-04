@@ -35,7 +35,8 @@ struct RootView: View {
             return true
         }
         .sheet(item: $model.portalSheet) { PortalSheet(model: model, portal: $0) }
-        .frame(minWidth: 1020, minHeight: 640)
+        .frame(minWidth: WindowConfigurator.minSize.width, minHeight: WindowConfigurator.minSize.height)
+        .background(WindowConfigurator())
     }
 }
 

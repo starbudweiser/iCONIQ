@@ -11,10 +11,14 @@ struct LibraryView: View {
             bar
             Rectangle().fill(Socle.C.border).frame(height: 1)
             HStack(spacing: 0) {
-                content
+                VStack(spacing: 0) {
+                    content
+                    Rectangle().fill(Socle.C.border).frame(height: 1)
+                    statusBar
+                }
                 if model.inspectorOpen {
                     Rectangle().fill(Socle.C.border).frame(width: 1)
-                    InspectorView(model: model).frame(width: 310)
+                    InspectorView(model: model).frame(width: 340)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -24,15 +28,23 @@ struct LibraryView: View {
 
     private var bar: some View {
         HStack(spacing: Socle.M.space3) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text(model.title).socle(Socle.T.heading).foregroundStyle(Socle.C.textStrong).lineLimit(1)
-                Text(L("lib.count", model.icons.count)).socle(Socle.T.caption).foregroundStyle(Socle.C.textSubtle)
-            }
-            .frame(minWidth: 120, alignment: .leading)
-            SearchField(prompt: L("lib.search"), text: $model.search).frame(maxWidth: 360)
-            Spacer(minLength: 0)
-            Slider(value: $tile, in: 72...200).frame(width: 90).tint(Socle.C.accent).help(L("lib.size"))
-            SocleSegmented(options: [true, false], selection: light, label: { $0 ? L("lib.bg.light") : L("lib.bg.dark") }, tone: { _ in .soft }) { light = $0 }
+            Text(model.title).socle(Socle.T.heading).foregroundStyle(Socle.C.textStrong).lineLimit(1)
+            Spacer(minLength: Socle.M.space3)
+            SearchField(prompt: L("lib.search"), text: $model.search).frame(width: 300)
+            BarButton(symbol: "sidebar.right", help: L("lib.inspector"), active: model.inspectorOpen) { model.inspectorOpen.toggle() }
+            ImportMenu(model: model)
+        }
+        .padding(.horizontal, Socle.M.space4).frame(height: Socle.M.sizeBar + 8)
+        .background(Socle.C.surfaceRaised)
+    }
+
+    /// Barre d'état : nombre d'icônes à gauche ; fond d'aperçu, tri et taille des vignettes à droite.
+    private var statusBar: some View {
+        HStack(spacing: Socle.M.space3) {
+            Text(L("lib.count", model.icons.count) + (model.selection.isEmpty ? "" : " · " + L("lib.selected", model.selection.count)))
+                .socle(Socle.T.meta).foregroundStyle(Socle.C.textSubtle).lineLimit(1)
+            Spacer()
+            BarButton(symbol: light ? "sun.max" : "moon", help: L("lib.bg")) { light.toggle() }
             Menu {
                 Picker(L("lib.sort"), selection: $model.sort) {
                     Text(L("lib.sort.name")).tag(IconSort.name)
@@ -41,10 +53,11 @@ struct LibraryView: View {
                 }.pickerStyle(.inline)
             } label: { Image(systemName: "arrow.up.arrow.down").foregroundStyle(Socle.C.textMuted) }
             .menuStyle(.borderlessButton).menuIndicator(.hidden).frame(width: Socle.M.sizeControl).help(L("lib.sort"))
-            BarButton(symbol: "sidebar.right", help: L("lib.inspector"), active: model.inspectorOpen) { model.inspectorOpen.toggle() }
-            ImportMenu(model: model)
+            Image(systemName: "square.grid.3x3").font(.system(size: 10)).foregroundStyle(Socle.C.textSubtle)
+            Slider(value: $tile, in: 72...200).frame(width: 110).tint(Socle.C.accent).help(L("lib.size"))
+            Image(systemName: "square.grid.2x2").font(.system(size: 12)).foregroundStyle(Socle.C.textSubtle)
         }
-        .padding(.horizontal, Socle.M.space4).frame(height: Socle.M.sizeBar + 14)
+        .padding(.horizontal, Socle.M.space4).frame(height: Socle.M.sizeControl + 4)
         .background(Socle.C.surfaceRaised)
     }
 
@@ -212,16 +225,18 @@ struct InspectorView: View {
                     if !icon.linkPath.isEmpty { info(L("insp.linked"), icon.linkPath) }
                 }
 
-                VStack(spacing: Socle.M.space2) {
-                    Button(L("act.copy")) { model.copy(icon) }.buttonStyle(SocleButtonStyle(.primary))
-                    HStack(spacing: Socle.M.space2) {
-                        Button(icon.starred ? L("act.unstar") : L("act.star")) { model.toggleStar([icon]) }.buttonStyle(SocleButtonStyle(.secondary))
-                        Menu(L("act.exportPNG")) { ForEach([64, 128, 256, 512, 1024], id: \.self) { s in Button("\(s) px") { model.exportPNG([icon], side: s) } } }
-                            .menuStyle(.button).buttonStyle(SocleButtonStyle(.secondary)).menuIndicator(.hidden)
-                    }
-                    HStack(spacing: Socle.M.space2) {
-                        Button(L("act.reveal")) { model.reveal([icon]) }.buttonStyle(SocleButtonStyle(.secondary))
-                        Button(L("common.delete")) { model.delete([icon]) }.buttonStyle(SocleButtonStyle(.secondary))
+                VStack(spacing: Socle.M.space3) {
+                    Button(L("act.copy")) { model.copy(icon) }.buttonStyle(SocleButtonStyle(.primary)).lineLimit(1)
+                    HStack(spacing: Socle.M.space1) {
+                        BarButton(symbol: icon.starred ? "star.fill" : "star", help: icon.starred ? L("act.unstar") : L("act.star"), active: icon.starred) { model.toggleStar([icon]) }
+                        Menu { ForEach([64, 128, 256, 512, 1024], id: \.self) { s in Button("\(s) px") { model.exportPNG([icon], side: s) } } } label: {
+                            Image(systemName: "square.and.arrow.up").foregroundStyle(Socle.C.textMuted).frame(width: Socle.M.sizeControl, height: Socle.M.sizeControl)
+                        }.menuStyle(.borderlessButton).menuIndicator(.hidden).frame(width: Socle.M.sizeControl).help(L("act.exportPNG"))
+                        BarButton(symbol: "chevron.left.forwardslash.chevron.right", help: L("act.copySVG")) { IconExport.copySVGCode(icon, lib: model.lib); model.say(L("toast.copiedCode")) }
+                            .disabled(icon.fmt != "svg")
+                        BarButton(symbol: "folder", help: L("act.reveal")) { model.reveal([icon]) }
+                        Spacer()
+                        BarButton(symbol: "trash", help: L("common.delete")) { model.delete([icon]) }
                     }
                 }
             }

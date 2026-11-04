@@ -116,3 +116,29 @@ struct ToastView: View {
             .shadow(color: .black.opacity(0.35), radius: 12, y: 4)
     }
 }
+
+/// Fenêtre principale : taille minimale qui évite tout chevauchement ou retour à la ligne des boutons, et centrage au lancement.
+struct WindowConfigurator: NSViewRepresentable {
+    static let minSize = NSSize(width: 1120, height: 680)
+    static let defaultSize = NSSize(width: 1320, height: 840)
+
+    func makeNSView(context: Context) -> NSView { Probe() }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    private final class Probe: NSView {
+        private var done = false
+        override func viewDidMoveToWindow() {
+            guard !done, let w = window else { return }
+            done = true
+            w.isRestorable = false
+            w.contentMinSize = WindowConfigurator.minSize
+            // SwiftUI restaure sa propre taille juste après l'affichage : on impose la nôtre au tour suivant.
+            DispatchQueue.main.async { [weak w] in
+                guard let w else { return }
+                let zone = (w.screen ?? NSScreen.main)?.visibleFrame.size ?? WindowConfigurator.defaultSize
+                w.setContentSize(NSSize(width: min(WindowConfigurator.defaultSize.width, zone.width), height: min(WindowConfigurator.defaultSize.height, zone.height - 40)))
+                w.socleCenter()
+            }
+        }
+    }
+}
