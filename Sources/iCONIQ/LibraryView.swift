@@ -5,6 +5,9 @@ struct LibraryView: View {
     @ObservedObject var model: AppModel
     @AppStorage("tileSize") private var tile = 112.0
     @AppStorage("previewBG") private var bg = PreviewBG.checker.rawValue
+    @State private var cellFrames: [String: CGRect] = [:]
+    @State private var marquee: CGRect?
+    @State private var marqueeBase: Set<String> = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -70,24 +73,67 @@ struct LibraryView: View {
         if model.icons.isEmpty {
             EmptyLibrary(model: model)
         } else {
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: tile, maximum: tile + 40), spacing: Socle.M.space3)], spacing: Socle.M.space3) {
-                    ForEach(model.icons) { icon in
-                        IconCell(model: model, icon: icon, selected: model.selection.contains(icon.id), tile: tile, bg: PreviewBG(rawValue: bg) ?? .checker)
+            GeometryReader { geo in
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: tile, maximum: tile + 40), spacing: Socle.M.space3)], spacing: Socle.M.space3) {
+                        ForEach(model.icons) { icon in
+                            IconCell(model: model, icon: icon, selected: model.selection.contains(icon.id), tile: tile, bg: PreviewBG(rawValue: bg) ?? .checker)
+                                .background(GeometryReader { g in Color.clear.preference(key: CellFramesKey.self, value: [icon.id: g.frame(in: .named("grid"))]) })
+                        }
                     }
+                    .padding(Socle.M.space4)
+                    .frame(maxWidth: .infinity, minHeight: geo.size.height, alignment: .top)
+                    .background(marqueeLayer)
+                    .overlay(alignment: .topLeading) { marqueeBox }
+                    .coordinateSpace(name: "grid")
+                    .onPreferenceChange(CellFramesKey.self) { cellFrames = $0 }
                 }
-                .padding(Socle.M.space4)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Socle.C.bg)
             .focusable().focusEffectDisabled()
             .onDeleteCommand { confirmDelete(model.selectedIcons) }
             .onKeyPress(.escape) { model.selection = []; return .handled }
+            .onKeyPress(characters: CharacterSet(charactersIn: "a"), phases: .down) { press in
+                guard press.modifiers == .command else { return .ignored }
+                model.selection = Set(model.icons.map(\.id))
+                return .handled
+            }
             .onKeyPress(characters: CharacterSet(charactersIn: "c"), phases: .down) { press in
                 guard press.modifiers == .command, let icon = model.selectedIcons.first else { return .ignored }
                 model.copy(icon)
                 return .handled
             }
+        }
+    }
+
+    /// Fond du quadrillage : un glisser démarré dans le vide trace un cadre qui sélectionne les icônes touchées
+    /// (⌘ ou ⇧ : ajoute à la sélection existante) ; un simple clic dans le vide désélectionne.
+    private var marqueeLayer: some View {
+        Color.clear.contentShape(Rectangle())
+            .onTapGesture { model.selection = [] }
+            .gesture(DragGesture(minimumDistance: 4, coordinateSpace: .named("grid"))
+                .onChanged { v in
+                    if marquee == nil {
+                        let f = NSEvent.modifierFlags
+                        marqueeBase = (f.contains(.command) || f.contains(.shift)) ? model.selection : []
+                    }
+                    let r = CGRect(x: min(v.startLocation.x, v.location.x), y: min(v.startLocation.y, v.location.y),
+                                   width: abs(v.location.x - v.startLocation.x), height: abs(v.location.y - v.startLocation.y))
+                    marquee = r
+                    let hit = Set(cellFrames.filter { $0.value.intersects(r) }.keys)
+                    let next = marqueeBase.union(hit)
+                    if next != model.selection { model.selection = next }
+                }
+                .onEnded { _ in marquee = nil })
+    }
+
+    @ViewBuilder private var marqueeBox: some View {
+        if let r = marquee {
+            RoundedRectangle(cornerRadius: 2).fill(Socle.C.accent.opacity(0.14))
+                .overlay(RoundedRectangle(cornerRadius: 2).stroke(Socle.C.accent, lineWidth: 1))
+                .frame(width: r.width, height: r.height).offset(x: r.minX, y: r.minY)
+                .allowsHitTesting(false)
         }
     }
 
@@ -99,6 +145,11 @@ struct LibraryView: View {
         a.addButton(withTitle: L("common.delete")); a.addButton(withTitle: L("common.cancel"))
         if a.runModal() == .alertFirstButtonReturn { model.delete(list) }
     }
+}
+
+private struct CellFramesKey: PreferenceKey {
+    static var defaultValue: [String: CGRect] = [:]
+    static func reduce(value: inout [String: CGRect], nextValue: () -> [String: CGRect]) { value.merge(nextValue()) { $1 } }
 }
 
 struct ImportMenu: View {
