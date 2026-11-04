@@ -185,6 +185,7 @@ struct IconMenu: View {
         Menu(L("act.exportPNG")) { ForEach([64, 128, 256, 512, 1024], id: \.self) { s in Button("\(s) px") { model.exportPNG(targets, side: s) } } }
         Button(L("act.exportOriginals")) { model.exportOriginals(targets) }
         Button(L("act.reveal")) { model.reveal(targets) }
+        if targets.count == 1 { Button(L("act.rename")) { model.promptRename(icon) } }
         Menu(L("side.moveTo")) { ForEach(model.collections.filter { $0.kind != .micone || true }) { c in Button(c.name) { model.move(targets, to: c.id) } } }
         Divider()
         Button(L("common.delete"), role: .destructive) { model.delete(targets) }

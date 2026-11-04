@@ -144,6 +144,20 @@ final class AppModel: ObservableObject {
         reload()
     }
 
+    /// Boîte « Renommer » : champ de texte prérempli, validé par Entrée.
+    func promptRename(_ icon: Icon) {
+        let a = NSAlert()
+        a.messageText = L("act.rename.title")
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
+        field.stringValue = icon.name
+        a.accessoryView = field
+        a.addButton(withTitle: L("act.rename.ok")); a.addButton(withTitle: L("common.cancel"))
+        a.window.initialFirstResponder = field
+        guard a.runModal() == .alertFirstButtonReturn else { return }
+        let nom = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !nom.isEmpty { rename(icon, name: nom, tags: icon.tags) }
+    }
+
     func reveal(_ list: [Icon]) { NSWorkspace.shared.activateFileViewerSelecting(list.map { lib.fileURL($0) }) }
 
     func exportPNG(_ list: [Icon], side: Int) {

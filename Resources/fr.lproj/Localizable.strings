@@ -8,6 +8,9 @@
 "act.copySVG" = "Copier le code SVG";
 "act.exportOriginals" = "Exporter les fichiers d'origine…";
 "act.exportPNG" = "Exporter en PNG";
+"act.rename" = "Renommer…";
+"act.rename.title" = "Nouveau nom de l'icône";
+"act.rename.ok" = "RENOMMER";
 "act.reveal" = "Afficher dans le Finder";
 "act.star" = "Ajouter aux favoris";
 "act.unstar" = "Retirer des favoris";
