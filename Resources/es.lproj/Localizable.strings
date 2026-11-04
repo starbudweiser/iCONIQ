@@ -57,8 +57,6 @@
 "insp.source" = "Origen";
 "insp.tags" = "Etiquetas";
 "insp.tags.hint" = "separadas por comas";
-"lib.bg.dark" = "Oscuro";
-"lib.bg.light" = "Claro";
 "lib.count" = "%d iconos";
 "lib.inspector" = "Mostrar / ocultar el detalle";
 "lib.search" = "Buscar un icono o una etiqueta";
@@ -133,7 +131,7 @@
 "upd.uptodate" = "iCONIQ está actualizado (versión %@).";
 "upd.version" = "Versión instalada: %@";
 "lib.selected" = "%d seleccionado(s)";
-"lib.bg" = "Fondo de la vista previa";
-"lib.bg.checker" = "Damero";
-"lib.bg.light" = "Claro";
-"lib.bg.dark" = "Oscuro";
+"lib.bg" = "Fondo tras los iconos transparentes";
+"lib.bg.checker" = "Transparente";
+"lib.bg.light" = "Fondo claro";
+"lib.bg.dark" = "Fondo oscuro";

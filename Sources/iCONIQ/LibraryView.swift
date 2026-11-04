@@ -44,7 +44,12 @@ struct LibraryView: View {
             Text(L("lib.count", model.icons.count) + (model.selection.isEmpty ? "" : " · " + L("lib.selected", model.selection.count)))
                 .socle(Socle.T.meta).foregroundStyle(Socle.C.textSubtle).lineLimit(1)
             Spacer()
-            BarButton(symbol: PreviewBG(rawValue: bg)?.symbol ?? "checkerboard.rectangle", help: L("lib.bg") + " : " + (PreviewBG(rawValue: bg)?.label ?? "")) { bg = (PreviewBG(rawValue: bg) ?? .checker).next.rawValue }
+            Menu {
+                Picker(L("lib.bg"), selection: $bg) {
+                    ForEach(PreviewBG.allCases, id: \.rawValue) { Label($0.label, systemImage: $0.symbol).tag($0.rawValue) }
+                }.pickerStyle(.inline)
+            } label: { Image(systemName: PreviewBG(rawValue: bg)?.symbol ?? "checkerboard.rectangle").foregroundStyle(Socle.C.textMuted) }
+            .menuStyle(.borderlessButton).menuIndicator(.hidden).frame(width: Socle.M.sizeControl).help(L("lib.bg") + " : " + (PreviewBG(rawValue: bg)?.label ?? ""))
             Menu {
                 Picker(L("lib.sort"), selection: $model.sort) {
                     Text(L("lib.sort.name")).tag(IconSort.name)

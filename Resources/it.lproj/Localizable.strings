@@ -57,8 +57,6 @@
 "insp.source" = "Origine";
 "insp.tags" = "Tag";
 "insp.tags.hint" = "separati da virgole";
-"lib.bg.dark" = "Scuro";
-"lib.bg.light" = "Chiaro";
 "lib.count" = "%d icone";
 "lib.inspector" = "Mostra / nascondi i dettagli";
 "lib.search" = "Cerca un'icona o un tag";
@@ -133,7 +131,7 @@
 "upd.uptodate" = "iCONIQ è aggiornato (versione %@).";
 "upd.version" = "Versione installata: %@";
 "lib.selected" = "%d selezionata/e";
-"lib.bg" = "Sfondo dell'anteprima";
-"lib.bg.checker" = "Scacchiera";
-"lib.bg.light" = "Chiaro";
-"lib.bg.dark" = "Scuro";
+"lib.bg" = "Sfondo dietro le icone trasparenti";
+"lib.bg.checker" = "Trasparente";
+"lib.bg.light" = "Sfondo chiaro";
+"lib.bg.dark" = "Sfondo scuro";
