@@ -120,7 +120,7 @@ struct ToastView: View {
 /// Fenêtre principale : taille minimale qui évite tout chevauchement ou retour à la ligne des boutons, et centrage au lancement.
 struct WindowConfigurator: NSViewRepresentable {
     static let minSize = NSSize(width: 1120, height: 680)
-    static let defaultSize = NSSize(width: 1320, height: 840)
+    static let defaultSize = NSSize(width: 1320, height: 904)
 
     func makeNSView(context: Context) -> NSView { Probe() }
     func updateNSView(_ nsView: NSView, context: Context) {}
