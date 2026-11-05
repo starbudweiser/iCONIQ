@@ -9,6 +9,7 @@ public enum Inbox {
         public var origin: String         // chemin de l'export dans MiCONE (identité du lien)
         public var kind: String?          // "app" ou "folder"
         public var source: String?
+        public var collection: String?    // identifiant de la collection choisie dans MiCONE (sinon « PERSONNEL »)
     }
 
     public static let collectionName = "PERSONNEL"
@@ -27,11 +28,13 @@ public enum Inbox {
             let fileURL = lib.inboxDir.appendingPathComponent(req.file)
             guard let data = try? Data(contentsOf: fileURL), let fmt = ImageMeta.sniff(data, hint: (req.file as NSString).pathExtension) else { try? fm.removeItem(at: jsonURL); continue }
             do {
+                let chosen = req.collection.flatMap { id in lib.collections().first { $0.id == id && $0.kind != .portal } }
                 if let old = lib.icon(linkPath: req.origin) {
                     try lib.replaceData(of: old, data: data, fmt: fmt)
+                    if let chosen, chosen.id != old.collection { lib.update(old.id, collection: chosen.id) }
                     ids.append(old.id)
                 } else {
-                    let coll = try lib.personalCollection()
+                    let coll = try chosen ?? lib.personalCollection()
                     let kind = req.kind == "folder" ? "folder" : "app"
                     let icon = try lib.addIcon(data: data, fmt: fmt, name: req.name, tags: "MiCONE, \(kind)", collection: coll.id, linkPath: req.origin, info: req.source ?? "MiCONE", skipDuplicate: false)
                     ids.append(icon.id)
