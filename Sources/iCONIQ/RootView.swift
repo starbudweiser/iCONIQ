@@ -99,7 +99,6 @@ struct SidebarView: View {
                     row(.all, "square.grid.2x2", L("side.all"), model.total)
                     row(.starred, "star", L("side.starred"), nil)
                     row(.recent, "clock", L("side.recent"), nil)
-                    if model.linkedCount > 0 { row(.micone, "app.badge", "MiCONE", model.linkedCount) }
 
                     header(L("side.library")) {
                         Menu {
