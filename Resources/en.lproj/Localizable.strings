@@ -138,3 +138,5 @@
 "lib.bg.checker" = "Transparent";
 "lib.bg.light" = "Light background";
 "lib.bg.dark" = "Dark background";
+
+"splash.subtitle" = "Icon library";

@@ -9,6 +9,7 @@ struct IconiqApp: App {
     var body: some Scene {
         Window("iCONIQ", id: "main") {
             RootView(model: model)
+                .splashGated()
                 .onOpenURL { url in handle(url) }
         }
         .defaultSize(width: WindowConfigurator.defaultSize.width, height: WindowConfigurator.defaultSize.height)
@@ -40,6 +41,12 @@ struct IconiqApp: App {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        // Le splash part avant que SwiftUI ouvre la fenêtre principale, pour pouvoir la retenir jusqu'à t = 2 s.
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+        Splash.shared.start(Splash.Config(title: "iCONIQ", subtitle: L("splash.subtitle"), footer: version.isEmpty ? "" : "v" + version, accent: Brand.color))
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         Socle.apply()
         Socle.brand("iCONIQ", color: Brand.color)
