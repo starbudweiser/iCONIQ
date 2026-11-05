@@ -221,8 +221,15 @@ struct IconCell: View {
             model.click(icon, command: f.contains(.command), shift: f.contains(.shift))
         }
         .onDrag {
-            model.lib.touch([icon.id])
-            return NSItemProvider(contentsOf: model.lib.fileURL(icon)) ?? NSItemProvider()
+            // Glisser vers une collection de la barre latérale (déplacement) ou vers le Finder (le fichier). Une icône
+            // hors sélection devient la sélection ; sinon c'est toute la sélection qui part.
+            if !model.selection.contains(icon.id) { model.selection = [icon.id] }
+            model.dragIDs = Array(model.selection)
+            let provider = NSItemProvider(contentsOf: model.lib.fileURL(icon)) ?? NSItemProvider()
+            provider.registerDataRepresentation(forTypeIdentifier: IconDrag.type.identifier, visibility: .ownProcess) { done in
+                done(Data(model.dragIDs.joined(separator: "\n").utf8), nil); return nil
+            }
+            return provider
         }
         .contextMenu { IconMenu(model: model, icon: icon) }
     }

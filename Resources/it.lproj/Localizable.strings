@@ -140,3 +140,5 @@
 "lib.bg.dark" = "Sfondo scuro";
 
 "splash.subtitle" = "Libreria di icone";
+
+"toast.moved" = "%d icona/e spostata/e in «%@»";

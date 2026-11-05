@@ -23,6 +23,8 @@ final class AppModel: ObservableObject {
     @Published var sort: IconSort = .name { didSet { reload() } }
     @Published private(set) var icons: [Icon] = []
     @Published var selection: Set<String> = []
+    /// Icônes en cours de glisser (déplacement vers une collection de la barre latérale).
+    var dragIDs: [String] = []
     @Published var groups: [IconGroup] = []
     @Published var collections: [IconCollection] = []
     @Published var portals: [Portal] = []
@@ -136,6 +138,16 @@ final class AppModel: ObservableObject {
     func move(_ list: [Icon], to collection: String) {
         for i in list { lib.update(i.id, collection: collection) }
         reload()
+    }
+
+    /// Icônes déposées sur une collection de la barre latérale.
+    func moveDragged(to collection: IconCollection) {
+        let ids = Set(dragIDs); dragIDs = []
+        let list = icons.filter { ids.contains($0.id) && $0.collection != collection.id }
+        guard !list.isEmpty else { return }
+        move(list, to: collection.id)
+        refreshSidebar()
+        say(L("toast.moved", list.count, collection.name))
     }
 
     func rename(_ icon: Icon, name: String, tags: String) {

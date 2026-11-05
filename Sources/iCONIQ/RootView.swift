@@ -24,19 +24,38 @@ struct RootView: View {
         .overlay { if let p = model.progress { ProgressCard(progress: p) } }
         .overlay { if dropTargeted { DropOverlay() } }
         .animation(.easeOut(duration: 0.18), value: model.toast)
-        .onDrop(of: [.fileURL], isTargeted: $dropTargeted) { providers in
-            Task {
-                var urls: [URL] = []
-                for p in providers {
-                    if let d = try? await p.loadItem(forTypeIdentifier: UTType.fileURL.identifier) as? Data, let u = URL(dataRepresentation: d, relativeTo: nil) { urls.append(u) }
-                }
-                await MainActor.run { model.importURLs(urls) }
-            }
-            return true
-        }
+        .onDrop(of: [.fileURL], delegate: FileDropDelegate(targeted: $dropTargeted) { urls in model.importURLs(urls) })
         .sheet(item: $model.portalSheet) { PortalSheet(model: model, portal: $0) }
         .frame(minWidth: WindowConfigurator.minSize.width, minHeight: WindowConfigurator.minSize.height)
         .background(WindowConfigurator())
+    }
+}
+
+/// Marqueur des glissers internes (icônes d'iCONIQ) : le fichier qu'ils portent pour le Finder ne doit pas être importé.
+enum IconDrag {
+    static let type = UTType(exportedAs: "fr.stephan.iconiq.icons")
+}
+
+/// Dépôt de fichiers venus de l'extérieur (Finder…) : importés. Les glissers internes sont refusés ici.
+struct FileDropDelegate: DropDelegate {
+    @Binding var targeted: Bool
+    let onFiles: ([URL]) -> Void
+
+    func validateDrop(info: DropInfo) -> Bool { info.hasItemsConforming(to: [.fileURL]) && !info.hasItemsConforming(to: [IconDrag.type]) }
+    func dropEntered(info: DropInfo) { targeted = true }
+    func dropExited(info: DropInfo) { targeted = false }
+    func dropUpdated(info: DropInfo) -> DropProposal? { DropProposal(operation: .copy) }
+    func performDrop(info: DropInfo) -> Bool {
+        targeted = false
+        let providers = info.itemProviders(for: [.fileURL])
+        Task {
+            var urls: [URL] = []
+            for p in providers {
+                if let d = try? await p.loadItem(forTypeIdentifier: UTType.fileURL.identifier) as? Data, let u = URL(dataRepresentation: d, relativeTo: nil) { urls.append(u) }
+            }
+            await MainActor.run { onFiles(urls) }
+        }
+        return true
     }
 }
 
@@ -168,6 +187,7 @@ struct SidebarView: View {
             }
             ForEach(model.collections.filter { $0.group == parent && $0.kind != .micone }) { c in
                 row(.collection(c.id), c.kind == .portal ? "globe" : "photo.on.rectangle", c.name, c.count, level: level)
+                    .modifier(CollectionDrop(model: model, collection: c))
                     .contextMenu {
                         Button(L("common.rename")) { renaming = .collection(c.id); renameText = c.name }
                         Menu(L("side.moveTo")) {
@@ -188,6 +208,28 @@ struct SidebarView: View {
             }
             model.item = item
         }
+    }
+}
+
+/// Une collection de la barre latérale reçoit les icônes glissées depuis la grille.
+struct CollectionDrop: ViewModifier {
+    let model: AppModel
+    let collection: IconCollection
+    @State private var over = false
+    func body(content: Content) -> some View {
+        content
+            .overlay(RoundedRectangle(cornerRadius: Socle.M.radius).stroke(Socle.C.accent, lineWidth: over ? 2 : 0).allowsHitTesting(false))
+            .onDrop(of: [IconDrag.type], delegate: Target(model: model, collection: collection, over: $over))
+    }
+    struct Target: DropDelegate {
+        let model: AppModel
+        let collection: IconCollection
+        @Binding var over: Bool
+        func validateDrop(info: DropInfo) -> Bool { info.hasItemsConforming(to: [IconDrag.type]) }
+        func dropEntered(info: DropInfo) { over = true }
+        func dropExited(info: DropInfo) { over = false }
+        func dropUpdated(info: DropInfo) -> DropProposal? { DropProposal(operation: .move) }
+        func performDrop(info: DropInfo) -> Bool { over = false; model.moveDragged(to: collection); return true }
     }
 }
 

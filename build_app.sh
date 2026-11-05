@@ -56,6 +56,11 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>NSHumanReadableCopyright</key><string>© 2026 Starbudweiser</string>
     <key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoadsInWebContent</key><true/></dict>
     <key>NSRemovableVolumesUsageDescription</key><string>iCONIQ importe vos bibliothèques d'icônes depuis vos disques externes.</string>
+    <key>UTExportedTypeDeclarations</key><array><dict>
+      <key>UTTypeIdentifier</key><string>fr.stephan.iconiq.icons</string>
+      <key>UTTypeDescription</key><string>iCONIQ icons</string>
+      <key>UTTypeConformsTo</key><array><string>public.data</string></array>
+    </dict></array>
     <key>CFBundleURLTypes</key><array><dict>
         <key>CFBundleURLName</key><string>fr.stephan.iconiq</string>
         <key>CFBundleURLSchemes</key><array><string>iconiq</string></array>
