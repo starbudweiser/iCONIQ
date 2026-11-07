@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 import iCONIQCore
 
 enum SidebarItem: Hashable {
-    case all, starred, recent, micone
+    case all, starred, recent
     case group(String), collection(String), portal(String)
 }
 
@@ -45,6 +45,7 @@ final class AppModel: ObservableObject {
     init() {
         do { lib = try Library() } catch { fatalError("Bibliothèque illisible : \(error)") }
         lib.seedPortalsIfNeeded()
+        _ = try? lib.miconeCollection()
         refreshSidebar()
         reload()
     }
@@ -61,7 +62,6 @@ final class AppModel: ObservableObject {
         case .all: scope = .all
         case .starred: scope = .starred
         case .recent: scope = .recent
-        case .micone: scope = .micone
         case .group(let id): scope = .group(id)
         case .collection(let id): scope = .collection(id)
         case .portal: return nil
@@ -96,7 +96,6 @@ final class AppModel: ObservableObject {
         case .all: return L("side.all")
         case .starred: return L("side.starred")
         case .recent: return L("side.recent")
-        case .micone: return "MiCONE"
         case .group(let id): return groups.first { $0.id == id }?.name ?? ""
         case .collection(let id): return collections.first { $0.id == id }?.name ?? ""
         case .portal(let id): return portals.first { $0.id == id }?.name ?? ""

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Lien dynamique avec MiCONE : MiCONE dépose dans `Inbox/` le fichier exporté et un descripteur `.json` ; iCONIQ l'ajoute
-/// (ou met à jour l'icône déjà suivie pour le même fichier d'origine) dans la collection « PERSONNEL ».
+/// (ou met à jour l'icône déjà suivie pour le même fichier d'origine) dans la collection « MiCONE » (point de chute).
 public enum Inbox {
     public struct Request: Codable, Sendable {
         public var name: String
@@ -9,10 +9,10 @@ public enum Inbox {
         public var origin: String         // chemin de l'export dans MiCONE (identité du lien)
         public var kind: String?          // "app" ou "folder"
         public var source: String?
-        public var collection: String?    // identifiant de la collection choisie dans MiCONE (sinon « PERSONNEL »)
+        public var collection: String?    // identifiant de la collection choisie dans MiCONE (sinon « MiCONE »)
     }
 
-    public static let collectionName = "PERSONNEL"
+    public static let collectionName = "MiCONE"
     private static let lock = NSLock()   // les surveillances du dossier peuvent se chevaucher : un seul traitement à la fois
 
     /// Traite tous les descripteurs en attente ; renvoie les identifiants d'icônes ajoutées ou mises à jour.
@@ -34,7 +34,7 @@ public enum Inbox {
                     if let chosen, chosen.id != old.collection { lib.update(old.id, collection: chosen.id) }
                     ids.append(old.id)
                 } else {
-                    let coll = try chosen ?? lib.personalCollection()
+                    let coll = try chosen ?? lib.miconeCollection()
                     let kind = req.kind == "folder" ? "folder" : "app"
                     let icon = try lib.addIcon(data: data, fmt: fmt, name: req.name, tags: "MiCONE, \(kind)", collection: coll.id, linkPath: req.origin, info: req.source ?? "MiCONE", skipDuplicate: false)
                     ids.append(icon.id)

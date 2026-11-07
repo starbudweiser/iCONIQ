@@ -76,10 +76,11 @@ public final class Library: @unchecked Sendable {
         return IconCollection(id: id, group: group, name: name, author: author, sourceURL: sourceURL, license: license, kind: kind, sort: sort)
     }
 
-    /// Collection « PERSONNEL » (créée au besoin) : destination des icônes venues de MiCONE.
-    public func personalCollection() throws -> IconCollection {
-        if let c = collections().first(where: { $0.name.caseInsensitiveCompare(Inbox.collectionName) == .orderedSame && $0.kind != .portal }) { return c }
-        return try addCollection(name: Inbox.collectionName)
+    /// Collection « MiCONE » (créée au besoin) : point de chute des icônes venues de MiCONE avant leur classement.
+    /// Une icône déplacée ailleurs n'y figure plus ; les mises à jour d'un même export se font sur place, où qu'elle soit.
+    public func miconeCollection() throws -> IconCollection {
+        if let c = collections().first(where: { $0.kind == .micone }) { return c }
+        return try addCollection(name: Inbox.collectionName, kind: .micone)
     }
 
     /// Nombre d'icônes suivies depuis MiCONE.

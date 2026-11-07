@@ -85,13 +85,31 @@ final class CoreTests: XCTestCase {
         try Inbox.submit(.init(name: "Mon icône", file: "x.png", origin: "/tmp/Mon.icns", kind: "app", source: "MiCONE"), data: png1, lib: lib)
         XCTAssertEqual(Inbox.process(lib).count, 1)
         let first = lib.icons(IconQuery(scope: .micone)).first!
-        XCTAssertEqual(lib.collections().first { $0.id == first.collection }?.name, "PERSONNEL")
+        XCTAssertEqual(lib.collections().first { $0.id == first.collection }?.name, "MiCONE")
         lib.setStarred([first.id], true)
         try Inbox.submit(.init(name: "Mon icône", file: "x.png", origin: "/tmp/Mon.icns", kind: "app", source: "MiCONE"), data: png2, lib: lib)
         XCTAssertEqual(Inbox.process(lib), [first.id])
         let all = lib.icons(IconQuery(scope: .micone))
         XCTAssertEqual(all.count, 1); XCTAssertTrue(all[0].starred)
         XCTAssertEqual((try? FileManager.default.contentsOfDirectory(atPath: lib.inboxDir.path))?.count, 0)
+    }
+
+    func testMiconeIsOnlyALandingPoint() throws {
+        let lib = try Library(root: tmp())
+        let png = Data(base64Encoded: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==")!
+        let micone = try lib.miconeCollection()
+        try Inbox.submit(.init(name: "A", file: "x.png", origin: "/tmp/A.icns", kind: "app", source: "MiCONE"), data: png, lib: lib)
+        let id = Inbox.process(lib)[0]
+        XCTAssertEqual(lib.icons(IconQuery(scope: .collection(micone.id))).count, 1)
+        let other = try lib.addCollection(name: "Classées")
+        lib.update(id, collection: other.id)
+        XCTAssertEqual(lib.icons(IconQuery(scope: .collection(micone.id))).count, 0)
+        // un nouvel export du même fichier met à jour l'icône là où elle a été classée, sans la ramener dans MiCONE
+        try Inbox.submit(.init(name: "A", file: "x.png", origin: "/tmp/A.icns", kind: "app", source: "MiCONE"), data: png, lib: lib)
+        XCTAssertEqual(Inbox.process(lib), [id])
+        XCTAssertEqual(lib.icons(IconQuery(scope: .collection(micone.id))).count, 0)
+        XCTAssertEqual(lib.icons(IconQuery(scope: .collection(other.id))).count, 1)
+        XCTAssertEqual(try lib.miconeCollection().id, micone.id)
     }
 
     func testInboxConcurrentPassesDoNotDuplicate() throws {

@@ -118,6 +118,7 @@ struct SidebarView: View {
                     row(.all, "square.grid.2x2", L("side.all"), model.total)
                     row(.starred, "star", L("side.starred"), nil)
                     row(.recent, "clock", L("side.recent"), nil)
+                    if let m = model.collections.first(where: { $0.kind == .micone }) { row(.collection(m.id), "app.badge", m.name, m.count) }
 
                     header(L("side.library")) {
                         Menu {

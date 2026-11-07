@@ -97,7 +97,7 @@
 "set.library.reveal" = "Show the library";
 "set.library.title" = "Library";
 "set.micone.found" = "MiCONE is installed.";
-"set.micone.help" = "Live link: every icon created in MiCONE is sent here and filed in the “PERSONNEL” collection. If you export the same icon again, it is updated in place, keeping its favorite status and tags.";
+"set.micone.help" = "Live link: every icon created in MiCONE is sent here and filed in the “MiCONE” collection, a landing point before you file them. If you export the same icon again, it is updated in place, keeping its favorite status and tags.";
 "set.micone.inbox" = "Show the drop folder";
 "set.micone.missing" = "MiCONE was not found on this Mac.";
 "set.micone.open" = "Open MiCONE";
