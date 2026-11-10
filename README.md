@@ -1,5 +1,7 @@
 # iCONIQ
 
+[![Listed on OpenMacApps](https://openmacapps.com/badge.svg)](https://openmacapps.com/apps/iconiq/)
+
 ## About
 
 **iCONIQ** is a personal icon library for macOS, inspired by IconJar (no affiliation with its authors). Import your IconJar libraries, browse icon portals from inside the app and capture icons straight into your own database, and receive icons created in MiCONE automatically.
