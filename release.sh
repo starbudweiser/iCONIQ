@@ -16,3 +16,4 @@ python3 /Volumes/SKYRIM/TOOLS/MAC/_tools/release_notes.py iCONIQ "$VERSION" --sh
 git push origin main
 gh release create "v$VERSION" "$DIST/iCONIQ.zip" "$DIST/iCONIQ.zip.sha256" --title "iCONIQ $VERSION" --notes-file "$DIST/notes.md"
 rm -rf "$DIST"
+git fetch -q --tags origin || true          # l'étiquette de la publication numérote ensuite les builds locaux (build_app.sh)
