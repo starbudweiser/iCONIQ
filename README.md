@@ -12,6 +12,8 @@ A personal icon library for macOS, inspired by IconJar.
 
 **iCONIQ** is a personal icon library for macOS, inspired by IconJar (no affiliation with its authors). Import your IconJar libraries, browse icon portals from inside the app and capture icons straight into your own database, and receive icons created in MiCONE automatically.
 
+iCONIQ is part of the **DESKTOP MAC TOOLKIT**, Starbudweiser's collection of macOS apps.
+
 Made by Starbudweiser & Claude Code (Anthropic). MIT License, © 2026 Starbudweiser. Provided as is, without warranty of any kind.
 
 ## Features
