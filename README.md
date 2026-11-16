@@ -16,6 +16,8 @@ iCONIQ is part of the **DESKTOP MAC TOOLKIT**, Starbudweiser's collection of mac
 
 Made by Starbudweiser & Claude Code (Anthropic). MIT License, © 2026 Starbudweiser. Provided as is, without warranty of any kind.
 
+![The iCONIQ main window showing a grid of 60 colourful line icons organised in four collections, with icon portals in the sidebar.](docs/screenshot.png)
+
 ## Features
 
 - Import IconJar libraries (`.ijlibrary`) and jars (`.iconjar`), icon folders and SVG / PNG / ICNS files.
