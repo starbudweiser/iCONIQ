@@ -11,3 +11,11 @@ Version personnelle d'IconJar (geticonjar.com) : bibliothèque d'icônes, import
 - Textes : `Resources/<langue>.lproj/Localizable.strings` (fr d'abord, puis en, es, it), un test vérifie les clés et les paramètres. Moteur de mise à jour : `UpdateEngine` (dépôt GitHub starbudweiser/iCONIQ).
 - Build et installation (~/Applications/Applications Personnelles) : `./build_app.sh` ou `_tools/build_all.sh iCONIQ`. Release : `./release.sh <version>` (notes : `_tools/changelogs/iCONIQ_<version>.txt`).
 - Tests : `swift test`.
+
+## Pilotage par IA (serveur MCP)
+- `iconiq-mcp` (cible `Sources/iconiq-mcp`, copié dans `Contents/MacOS/` par `build_app.sh`) : stdio JSON-RPC, cœur `Sources/IconiqMCPCore` (`Server`, `Tools`), lie `MiCONECore` du dépôt voisin (`.package(path: "../MiCONE")`). 11 outils `icons_*` / `library_*` ; appli fermée ou ouverte (écriture directe dans `Library.db`, puis notification distribuée `…library-changed` qui recharge l'appli).
+- Réglages partagés `mcp.json` (600) dans le dossier de données (`MCPSettings`, `MCPStore`) : désactivé par défaut, accord par client (`pending` → bandeau `PendingClientBanner` et Réglages › Pilotage IA), rangement par défaut + règles (`Rangement`), couleur de dossier, gravure, détourage, sauvegarde des icônes remplacées (`Backups/`). Journal `mcp.log` (500 lignes). Fichiers fabriqués dans `Made/`.
+- Valeurs génériques par défaut : rien de propre à un utilisateur dans le code (règle universelle) ; les préférences sont des réglages.
+- Raccordement en un clic : `Connectors` (modèle mTAPES ; entrée `iconiq`, `iconiq-dev` pour l'édition de dev). Skill d'usage : `skill/icones/SKILL.md`.
+- Essai de bout en bout : `swift build && python3 scripts/mcp_e2e.py` (dossier de données temporaire, 27 vérifications).
+- Édition de dev : `DEV=1 ./build_app.sh` → `iCONIQ dev.app` (bundle `fr.stephan.iconiq.dev`, données `iCONIQ-dev`, pas de mise à jour automatique, non installée).
