@@ -24,7 +24,16 @@ Made by Starbudweiser & Claude Code (Anthropic). MIT License, © 2026 Starbudwei
 - Built-in browser for icon portals whose addresses you enter yourself: search, navigation, detection of the icons on a page, click-to-capture mode, direct import of downloads (images and ZIP).
 - Live link with MiCONE: every icon exported there lands in the "MiCONE" collection (a landing point: move it elsewhere and it leaves the folder) and is updated in place, wherever it was filed, when exported again.
 - Search by name and tags, favorites, recents, collections and groups, copy as SVG / image, drag out to any app, export to PNG.
+- **AI control (MCP server)**: let Claude, Codex, Cursor or Gemini CLI make an app icon and its Finder-style folder icon from one image, set it on a folder and file both in the collection you confirm. Off by default, approved once per client, works with iCONIQ closed; nothing is deleted, nothing leaves your Mac. See [AI control](#ai-control).
 - Automatic updates (GitHub releases, Developer ID signature check). English, French, Spanish, Italian.
+
+## AI control
+
+*Settings › AI control*: turn on **Allow AI control**, click **Connect** next to your AI (or copy the command), then allow it once when it first calls iCONIQ. Choose the default collections for app and folder icons, optional filing rules (e.g. "path contains X → collection Y"), the default folder colour and whether the motif is engraved. The previous custom icon of a folder is backed up; system folders, Applications, app bundles and disk roots are always refused.
+
+![iCONIQ settings, AI control tab: permission, connected AI clients, default filing collections and rules, default folder colour and folder protection.](docs/ai-control.png)
+
+The server, `iconiq-mcp`, ships inside the app (`iCONIQ.app/Contents/MacOS/iconiq-mcp`, stdio). Tools: `icons_app_kit` (app icon + folder icon + set on folder + file in the library, in one call), `icons_make`, `icons_apply_to_folder`, `icons_clear_folder_icon`, `library_list`, `library_suggest_collection`, `library_create_collection`, `library_create_group`, `library_add_icon`, `library_search`, `library_get_icon`. Icons are rendered with MiCONE's engine.
 
 ## Install
 
@@ -61,6 +70,7 @@ Bibliothèque d'icônes personnelle pour macOS, inspirée d'IconJar (sans lien a
 - **Import** : bouton IMPORTER ou glisser-déposer d'une bibliothèque IconJar, d'un dossier ou de fichiers.
 - **Portails** : `+` dans la section Portails, adresse du site, modèle de recherche facultatif (`{q}` = mot cherché). DÉTECTER liste les icônes de la page ; le viseur active le mode capture (un clic = un ajout).
 - **MiCONE** : rien à régler, voir `Réglages › Lien avec MiCONE`.
+- **Pilotage par IA** : `Réglages › Pilotage IA`, cocher « Autoriser le pilotage par IA », raccorder votre IA (Claude Code, Claude Desktop, Cursor, Codex, Gemini CLI) puis l'autoriser à son premier appel. Elle peut alors fabriquer l'icône d'une appli et celle de son dossier, la poser sur le dossier et ranger les deux dans la collection que vous confirmez. Désactivé par défaut, fonctionne appli fermée, ne supprime rien, n'envoie rien sur Internet ; l'ancienne icône d'un dossier est sauvegardée.
 - Données : `~/Library/Application Support/iCONIQ/` (`ICONIQ_DATA_DIR` pour les essais).
 
 ### Développement

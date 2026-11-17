@@ -23,7 +23,7 @@ struct SettingsView: View {
             .overlay(alignment: .bottom) { Rectangle().fill(Socle.C.border).frame(height: 1) }
             if tab == "ai" { AIControlView(model: model) } else { GeneralSettingsView(model: model) }
         }
-        .frame(width: 940, height: tab == "ai" ? 720 : 470)
+        .frame(width: 940, height: tab == "ai" ? 720 : 560)
         .background(Socle.C.bg)
     }
 }
