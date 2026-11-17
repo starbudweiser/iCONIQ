@@ -25,6 +25,35 @@ struct SettingsView: View {
         }
         .frame(width: 940, height: tab == "ai" ? 720 : 560)
         .background(Socle.C.bg)
+        .background(CenterOnAppWindow())
+    }
+}
+
+/// Règle Socle « fenêtres secondaires centrées sur la fenêtre de l'appli » : les Réglages s'ouvrent au centre de la fenêtre
+/// principale, à chaque ouverture (la fenêtre est réutilisée par SwiftUI, on recentre après sa fermeture).
+struct CenterOnAppWindow: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView { Probe() }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    private final class Probe: NSView {
+        private var centered = false
+        private var observers: [NSObjectProtocol] = []
+        deinit { observers.forEach(NotificationCenter.default.removeObserver) }
+
+        override func viewDidMoveToWindow() {
+            guard let w = window, observers.isEmpty else { return }
+            observers.append(NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: w, queue: .main) { [weak self] _ in self?.centered = false })
+            observers.append(NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: w, queue: .main) { [weak self] _ in self?.center() })
+            center()
+        }
+
+        private func center() {
+            guard !centered, let w = window else { return }
+            centered = true
+            for delay in [0.0, 0.05, 0.2] { // SwiftUI replace la fenêtre juste après son affichage
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak w] in w?.updaterCenter() }
+            }
+        }
     }
 }
 
