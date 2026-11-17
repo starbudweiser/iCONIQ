@@ -43,7 +43,7 @@ struct GeneralSettingsView: View {
                         Text(miconeURL != nil ? L("set.micone.found") : L("set.micone.missing")).socle(Socle.T.body).foregroundStyle(Socle.C.text)
                     }
                     Hint(L("set.micone.help"))
-                    HStack(spacing: Socle.M.space2) {
+                    ButtonRow {
                         Button(L("set.micone.open")) { if let u = miconeURL { NSWorkspace.shared.openApplication(at: u, configuration: { let c = NSWorkspace.OpenConfiguration(); c.activates = false; return c }()) } }
                             .buttonStyle(SocleButtonStyle(.secondary)).disabled(miconeURL == nil)
                         Button(L("set.micone.inbox")) { NSWorkspace.shared.activateFileViewerSelecting([model.lib.inboxDir]) }.buttonStyle(SocleButtonStyle(.secondary))
@@ -53,7 +53,7 @@ struct GeneralSettingsView: View {
                 Card(title: L("set.library.title")) {
                     Hint(L("set.library.count", model.total, model.collections.count))
                     Hint(model.lib.root.path)
-                    HStack(spacing: Socle.M.space2) {
+                    ButtonRow {
                         Button(L("set.library.reveal")) { NSWorkspace.shared.activateFileViewerSelecting([model.lib.root]) }.buttonStyle(SocleButtonStyle(.secondary))
                         Button(L("set.library.cache")) {
                             try? FileManager.default.removeItem(at: model.lib.cacheDir.appendingPathComponent("thumbs")); Thumbs.shared.forget(); model.reload(); model.say(L("set.library.cache.done"))
@@ -100,4 +100,15 @@ struct UpdateSection: View {
 
 enum MiCONELink {
     static let bundleID = Edition.isDev ? "fr.stephan.micone.dev" : "fr.stephan.micone"
+}
+
+/// Rangée de boutons : côte à côte si la place suffit, sinon en colonne (jamais un libellé sur deux lignes).
+struct ButtonRow<Content: View>: View {
+    @ViewBuilder var content: () -> Content
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: Socle.M.space2) { content() }
+            VStack(spacing: Socle.M.space2) { content() }
+        }
+    }
 }
