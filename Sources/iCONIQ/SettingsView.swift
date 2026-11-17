@@ -3,13 +3,40 @@ import iCONIQCore
 
 struct SettingsView: View {
     @ObservedObject var model: AppModel
+    @AppStorage("settingsTab") private var tab = "general"
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 2) {
+                ForEach([("general", L("set.tab.general")), ("ai", L("set.tab.ai"))], id: \.0) { key, title in
+                    Button { tab = key } label: {
+                        Text(title).socle(Socle.T.label).foregroundStyle(tab == key ? Socle.C.textStrong : Socle.C.textMuted)
+                            .padding(.horizontal, 14).padding(.vertical, 10)
+                            .overlay(alignment: .bottom) { if tab == key { Rectangle().fill(Socle.C.accent).frame(height: 2).padding(.horizontal, 8) } }
+                            .contentShape(Rectangle())
+                    }.buttonStyle(.plain)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, Socle.M.space4)
+            .background(Socle.C.surfaceRaised)
+            .overlay(alignment: .bottom) { Rectangle().fill(Socle.C.border).frame(height: 1) }
+            if tab == "ai" { AIControlView(model: model) } else { GeneralSettingsView(model: model) }
+        }
+        .frame(width: 940, height: tab == "ai" ? 720 : 470)
+        .background(Socle.C.bg)
+    }
+}
+
+struct GeneralSettingsView: View {
+    @ObservedObject var model: AppModel
     @ObservedObject var updates = UpdateEngine.shared
     @AppStorage("autoUpdate") private var auto = true
     @State private var miconeURL: URL? = NSWorkspace.shared.urlForApplication(withBundleIdentifier: MiCONELink.bundleID)
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: Socle.M.space4) {
+            SocleModuleGrid(minimum: 400) {
                 Card(title: L("set.micone.title")) {
                     HStack(spacing: Socle.M.space2) {
                         Circle().fill(miconeURL != nil ? Socle.C.success : Socle.C.textDisabled).frame(width: 8, height: 8)
@@ -42,7 +69,6 @@ struct SettingsView: View {
             }
             .padding(Socle.M.space6)
         }
-        .frame(width: 560, height: 640)
         .background(Socle.C.bg)
     }
 }
@@ -73,5 +99,5 @@ struct UpdateSection: View {
 }
 
 enum MiCONELink {
-    static let bundleID = "fr.stephan.micone"
+    static let bundleID = Edition.isDev ? "fr.stephan.micone.dev" : "fr.stephan.micone"
 }

@@ -2,6 +2,11 @@ import Foundation
 import CryptoKit
 
 /// Base d'icônes d'iCONIQ : `Library.db` + fichiers dans `Files/<collection>/`.
+/// Édition de développement (bundle `fr.stephan.iconiq.dev`) : données à part, dans `iCONIQ-dev`.
+public enum Edition {
+    public static let isDev = Bundle.main.bundleIdentifier?.hasSuffix(".dev") ?? false
+}
+
 public final class Library: @unchecked Sendable {
     public let root: URL
     public let db: Database
@@ -11,7 +16,7 @@ public final class Library: @unchecked Sendable {
 
     public static var defaultRoot: URL {
         if let p = ProcessInfo.processInfo.environment["ICONIQ_DATA_DIR"] { return URL(fileURLWithPath: p, isDirectory: true) }
-        return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("iCONIQ", isDirectory: true)
+        return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent(Edition.isDev ? "iCONIQ-dev" : "iCONIQ", isDirectory: true)
     }
 
     public init(root: URL = Library.defaultRoot) throws {

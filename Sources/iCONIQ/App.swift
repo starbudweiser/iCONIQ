@@ -52,6 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Socle.brand("iCONIQ", color: Brand.color)
         let model = AppModel.shared
         model.startInbox()
+        _ = MCPModel.shared   // suit les réglages du pilotage par IA et les ajouts faits par l'auxiliaire iconiq-mcp
         // Essais : `--import <chemin>` importe une bibliothèque IconJar ou un dossier au lancement ; `--portal <adresse>` ouvre un portail.
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--import"), i + 1 < args.count { model.importURLs([URL(fileURLWithPath: args[i + 1])]) }

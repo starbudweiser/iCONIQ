@@ -18,6 +18,7 @@ struct RootView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .safeAreaInset(edge: .top, spacing: 0) { PendingClientBanner() }
         }
         .background(Socle.C.bg)
         .overlay(alignment: .bottom) { if let t = model.toast { ToastView(toast: t).padding(.bottom, Socle.M.space6).transition(.move(edge: .bottom).combined(with: .opacity)) } }
