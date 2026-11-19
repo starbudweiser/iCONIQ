@@ -61,7 +61,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>NSHighResolutionCapable</key><true/>
     <key>NSHumanReadableCopyright</key><string>© 2026 Starbudweiser</string>
     <key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoadsInWebContent</key><true/></dict>
-    <key>NSRemovableVolumesUsageDescription</key><string>iCONIQ importe vos bibliothèques d'icônes depuis vos disques externes.</string>
+    <key>NSRemovableVolumesUsageDescription</key><string>iCONIQ imports your icon libraries from your external drives.</string>
     <key>UTExportedTypeDeclarations</key><array><dict>
       <key>UTTypeIdentifier</key><string>fr.stephan.iconiq.icons</string>
       <key>UTTypeDescription</key><string>iCONIQ icons</string>
